@@ -1,7 +1,22 @@
-# Tauri + Vanilla
+# TeamFlow
+### Asana-Alternative for Teams — Self-Hosted, Free Forever
 
-This template should help get you started developing with Tauri in vanilla HTML, CSS and Javascript.
+> **No hosting costs. No subscriptions.** Team task tracker syncing via OneDrive.
 
-## Recommended IDE Setup
+## Features
+- Kanban Board with drag & drop
+- Views: Kanban, List, Timeline, Gantt
+- Tasks, Subtasks, Milestones, Time tracking
+- Teams & Projects
+- Voice Commands
+- OneDrive Sync (no server needed)
+- Desktop app (Mac & Windows)
 
-- [VS Code](https://code.visualstudio.com/) + [Tauri](https://marketplace.visualstudio.com/items?itemName=tauri-apps.tauri-vscode) + [rust-analyzer](https://marketplace.visualstudio.com/items?itemName=rust-lang.rust-analyzer)
+## Quick Start
+
+
+## OneDrive Sync Setup
+mkdir -p ~/OneDrive/TeamFlow
+then use Settings in app
+
+## License: MIT
