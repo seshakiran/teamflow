@@ -1,0 +1,17 @@
+{
+  "name": "tauri-app",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "scripts": {
+    "tauri": "tauri"
+  },
+  "devDependencies": {
+    "@tauri-apps/cli": "^2"
+  },
+  "dependencies": {
+    "dnd-kit": "^0.0.2",
+    "nanoid": "^5.1.9",
+    "sortablejs": "^1.15.7"
+  }
+}

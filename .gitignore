@@ -1,0 +1,5 @@
+node_modules/
+target/
+*.log
+src-tauri/target/
+src-tauri/Cargo.lock

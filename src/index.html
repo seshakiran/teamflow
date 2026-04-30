@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TeamFlow - Task Tracker</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div id="app">
+        <!-- Sidebar -->
+        <aside class="sidebar" id="sidebar">
+            <div class="sidebar-header">
+                <h1 class="app-logo">⚡ TeamFlow</h1>
+            </div>
+            
+            <div class="sidebar-section">
+                <h3 class="section-title">Teams</h3>
+                <div id="teams-list" class="teams-list"></div>
+                <button class="btn-add" onclick="showTeamModal()">+ New Team</button>
+            </div>
+            
+            <div class="sidebar-section">
+                <h3 class="section-title">Projects</h3>
+                <div id="projects-list" class="projects-list"></div>
+                <button class="btn-add" onclick="showProjectModal()">+ New Project</button>
+            </div>
+            
+            <div class="sidebar-section">
+                <h3 class="section-title">Quick Views</h3>
+                <nav class="quick-nav">
+                    <a href="#" class="nav-item" onclick="filterBy('my-tasks')">👤 My Tasks</a>
+                    <a href="#" class="nav-item" onclick="filterBy('due-today')">📅 Due Today</a>
+                    <a href="#" class="nav-item" onclick="filterBy('overdue')">⚠️ Overdue</a>
+                </nav>
+            </div>
+            
+            <div class="sidebar-footer">
+                <div class="sync-status" id="sync-status">
+                    <span class="sync-dot"></span>
+                    <span>Not synced</span>
+                </div>
+                <button class="btn-sync" onclick="syncData()">🔄 Sync</button>
+                <button class="btn-settings" onclick="showSettings()">⚙️</button>
+            </div>
+        </aside>
+        
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Header -->
+            <header class="content-header">
+                <div class="header-left">
+                    <button class="btn-menu" onclick="toggleSidebar()">☰</button>
+                    <h2 id="current-project-name">Select a Project</h2>
+                </div>
+                <div class="header-right">
+                    <div class="view-toggle">
+                        <button class="view-btn active" onclick="setView('board')" data-view="board">📋 Board</button>
+                        <button class="view-btn" onclick="setView('list')" data-view="list">📝 List</button>
+                        <button class="view-btn" onclick="setView('timeline')" data-view="timeline">📊 Timeline</button>
+                        <button class="view-btn" onclick="setView('gantt')" data-view="gantt">📈 Gantt</button>
+                    </div>
+                    <button class="btn-voice" onclick="toggleVoice()" title="Voice Command">🎤</button>
+                    <button class="btn-add-task" onclick="showTaskModal()">+ New Task</button>
+                </div>
+            </header>
+            
+            <!-- Voice Command Panel -->
+            <div class="voice-panel" id="voice-panel" style="display: none;">
+                <div class="voice-input-container">
+                    <button class="btn-mic" id="btn-mic" onclick="startVoice()">🎤</button>
+                    <input type="text" id="voice-input" class="voice-input" placeholder="Say a command... e.g., 'Create task Fix bug'" />
+                    <button class="btn-voice-send" onclick="sendVoiceCommand()">Send</button>
+                </div>
+                <div class="voice-status" id="voice-status">Click microphone to speak</div>
+            </div>
+            
+            <!-- Content Views -->
+            <div class="content-body" id="content-body">
+                <!-- Board View (Kanban) -->
+                <div class="board-view" id="board-view">
+                    <div class="kanban-container" id="kanban-container"></div>
+                    <button class="btn-add-column" onclick="showColumnModal()">+ Add Column</button>
+                </div>
+                
+                <!-- List View -->
+                <div class="list-view" id="list-view" style="display: none;">
+                    <table class="task-table">
+                        <thead>
+                            <tr>
+                                <th>Task</th>
+                                <th>Assignee</th>
+                                <th>Due Date</th>
+                                <th>Priority</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody id="task-list-body"></tbody>
+                    </table>
+                </div>
+                
+                <!-- Timeline View -->
+                <div class="timeline-view" id="timeline-view" style="display: none;">
+                    <div class="timeline-header">
+                        <button onclick="timelineZoom('day')">Day</button>
+                        <button onclick="timelineZoom('week')">Week</button>
+                        <button onclick="timelineZoom('month')">Month</button>
+                    </div>
+                    <div class="timeline-body" id="timeline-body"></div>
+                </div>
+                
+                <!-- Gantt View -->
+                <div class="gantt-view" id="gantt-view" style="display: none;">
+                    <div class="gantt-chart" id="gantt-chart"></div>
+                </div>
+            </div>
+        </main>
+    </div>
+    
+    <!-- Task Detail Modal -->
+    <div class="modal" id="task-modal">
+        <div class="modal-content task-detail-modal">
+            <button class="modal-close" onclick="closeTaskModal()">&times;</button>
+            <div class="task-detail-header">
+                <input type="text" id="task-title-input" class="task-title-editable" placeholder="Task Title" />
+            </div>
+            <div class="task-detail-body">
+                <div class="task-detail-main">
+                    <div class="detail-section">
+                        <h4>Description</h4>
+                        <textarea id="task-description" class="task-description" placeholder="Add description..."></textarea>
+                    </div>
+                    <div class="detail-section">
+                        <h4>Subtasks</h4>
+                        <div id="subtasks-list" class="subtasks-list"></div>
+                        <div class="add-subtask">
+                            <input type="text" id="new-subtask" placeholder="Add subtask..." />
+                            <button onclick="addSubtask()">+</button>
+                        </div>
+                    </div>
+                    <div class="detail-section">
+                        <h4>Milestones / Progress Steps</h4>
+                        <div id="milestones-list" class="milestones-list"></div>
+                        <div class="add-milestone">
+                            <input type="text" id="new-milestone" placeholder="Add milestone..." />
+                            <input type="date" id="milestone-date" />
+                            <button onclick="addMilestone()">+</button>
+                        </div>
+                    </div>
+                    <div class="detail-section">
+                        <h4>Comments</h4>
+                        <div id="comments-list" class="comments-list"></div>
+                        <div class="add-comment">
+                            <input type="text" id="new-comment" placeholder="Add comment..." />
+                            <button onclick="addComment()">Send</button>
+                        </div>
+                    </div>
+                    <div class="detail-section">
+                        <h4>Time Tracking</h4>
+                        <div class="time-tracking">
+                            <button class="btn-timer-start" id="btn-timer-start" onclick="startTimer()">▶ Start Timer</button>
+                            <div class="timer-display" id="timer-display">00:00:00</div>
+                            <div class="time-entries" id="time-entries"></div>
+                        </div>
+                    </div>
+                </div>
+                <div class="task-detail-sidebar">
+                    <div class="detail-field">
+                        <label>Status</label>
+                        <select id="task-status">
+                            <option value="todo">To Do</option>
+                            <option value="in-progress">In Progress</option>
+                            <option value="in-review">In Review</option>
+                            <option value="done">Done</option>
+                        </select>
+                    </div>
+                    <div class="detail-field">
+                        <label>Priority</label>
+                        <select id="task-priority">
+                            <option value="low">Low</option>
+                            <option value="medium">Medium</option>
+                            <option value="high">High</option>
+                            <option value="urgent">Urgent</option>
+                        </select>
+                    </div>
+                    <div class="detail-field">
+                        <label>Assignees</label>
+                        <div id="task-assignees" class="assignees-list"></div>
+                        <select id="add-assignee">
+                            <option value="">Add assignee...</option>
+                        </select>
+                    </div>
+                    <div class="detail-field">
+                        <label>Due Date</label>
+                        <input type="date" id="task-due-date" />
+                    </div>
+                    <div class="detail-field">
+                        <label>Start Date</label>
+                        <input type="date" id="task-start-date" />
+                    </div>
+                    <div class="detail-field">
+                        <label>Estimated Hours</label>
+                        <input type="number" id="task-estimated-hours" min="0" step="0.5" />
+                    </div>
+                    <div class="detail-field">
+                        <label>Recurring</label>
+                        <select id="task-recurring">
+                            <option value="">None</option>
+                            <option value="daily">Daily</option>
+                            <option value="weekly">Weekly</option>
+                            <option value="monthly">Monthly</option>
+                        </select>
+                    </div>
+                    <div class="detail-field">
+                        <label>Tags</label>
+                        <div id="task-tags" class="tags-list"></div>
+                        <select id="add-tag">
+                            <option value="">Add tag...</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Team Modal -->
+    <div class="modal" id="team-modal">
+        <div class="modal-content">
+            <button class="modal-close" onclick="closeModal('team-modal')">&times;</button>
+            <h3>New Team</h3>
+            <input type="text" id="team-name" placeholder="Team Name" />
+            <input type="color" id="team-color" value="#e94560" />
+            <button class="btn-primary" onclick="createTeam()">Create Team</button>
+        </div>
+    </div>
+    
+    <!-- Project Modal -->
+    <div class="modal" id="project-modal">
+        <div class="modal-content">
+            <button class="modal-close" onclick="closeModal('project-modal')">&times;</button>
+            <h3>New Project</h3>
+            <input type="text" id="project-name" placeholder="Project Name" />
+            <textarea id="project-description" placeholder="Description"></textarea>
+            <input type="color" id="project-color" value="#533483" />
+            <button class="btn-primary" onclick="createProject()">Create Project</button>
+        </div>
+    </div>
+    
+    <!-- Column Modal -->
+    <div class="modal" id="column-modal">
+        <div class="modal-content">
+            <button class="modal-close" onclick="closeModal('column-modal')">&times;</button>
+            <h3>New Column</h3>
+            <input type="text" id="column-name" placeholder="Column Name" />
+            <input type="color" id="column-color" value="#3498db" />
+            <button class="btn-primary" onclick="createColumn()">Create Column</button>
+        </div>
+    </div>
+    
+    <!-- Task Create Modal -->
+    <div class="modal" id="task-create-modal">
+        <div class="modal-content">
+            <button class="modal-close" onclick="closeModal('task-create-modal')">&times;</button>
+            <h3>New Task</h3>
+            <input type="text" id="new-task-title" placeholder="Task Title" />
+            <textarea id="new-task-description" placeholder="Description"></textarea>
+            <select id="new-task-priority">
+                <option value="low">Low</option>
+                <option value="medium" selected>Medium</option>
+                <option value="high">High</option>
+                <option value="urgent">Urgent</option>
+            </select>
+            <input type="date" id="new-task-due-date" />
+            <button class="btn-primary" onclick="createTask()">Create Task</button>
+        </div>
+    </div>
+    
+    <!-- Settings Modal -->
+    <div class="modal" id="settings-modal">
+        <div class="modal-content">
+            <button class="modal-close" onclick="closeModal('settings-modal')">&times;</button>
+            <h3>Settings</h3>
+            <div class="settings-section">
+                <h4>OneDrive Sync</h4>
+                <p id="onedrive-path">OneDrive path: Not configured</p>
+                <button class="btn-primary" onclick="syncFromOneDrive()">Pull from OneDrive</button>
+                <button class="btn-primary" onclick="syncToOneDrive()">Push to OneDrive</button>
+            </div>
+            <div class="settings-section">
+                <h4>Voice Settings</h4>
+                <label><input type="checkbox" id="voice-enabled" /> Enable Voice Commands</label>
+            </div>
+        </div>
+    </div>
+
+    <script src="main.js"></script>
+</body>
+</html>
